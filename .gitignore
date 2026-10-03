@@ -1,0 +1,22 @@
+# Directorio de trabajo de Terraform
+.terraform/
+
+# Estado local y copias de seguridad
+*.tfstate
+*.tfstate.*
+.terraform.tfstate.lock.info
+
+# Variables locales que pueden contener secretos
+*.tfvars
+*.tfvars.json
+
+# Planes guardados y registros de errores
+*.tfplan
+crash.log
+crash.*.log
+
+# Configuración local de la CLI
+.terraformrc
+terraform.rc
+
+# .terraform.lock.hcl debe versionarse; no se ignora.
