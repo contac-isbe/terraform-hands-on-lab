@@ -9,4 +9,6 @@ terraform {
   }
 }
 
-provider "docker" {}
+provider "docker" {
+  host = "npipe:////./pipe/dockerDesktopLinuxEngine"
+}
