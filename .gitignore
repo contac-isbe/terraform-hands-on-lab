@@ -20,3 +20,6 @@ crash.*.log
 terraform.rc
 
 # .terraform.lock.hcl debe versionarse; no se ignora.
+
+# Dependencias locales de Node.js
+node_modules/

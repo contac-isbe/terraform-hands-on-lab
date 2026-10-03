@@ -8,10 +8,16 @@ resource "docker_network" "qa" {
   name = "qa-network"
 }
 
-# Reutiliza las imágenes oficiales de DEV con las mismas versiones.
+# Reutiliza las mismas imágenes que DEV.
 resource "docker_container" "web_qa" {
   name  = "web-qa"
   image = docker_image.web_dev.image_id
+
+  volumes {
+    host_path      = abspath("${path.module}/frontend")
+    container_path = "/usr/share/nginx/html"
+    read_only      = true
+  }
 
   ports {
     internal = 80
@@ -28,8 +34,14 @@ resource "docker_container" "api_qa" {
   name  = "api-qa"
   image = docker_image.api_dev.image_id
 
-  # Mantiene Node.js activo hasta incorporar el backend.
-  command = ["node", "-e", "setInterval(() => {}, 2147483647)"]
+  env = [
+    "APP_ENV=QA",
+    "PGHOST=bd-qa",
+    "PGPORT=5432",
+    "PGUSER=qa",
+    "PGDATABASE=qa",
+    "PGPASSWORD=${var.qa_postgres_password}",
+  ]
 
   ports {
     internal = 3000

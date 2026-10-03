@@ -13,7 +13,18 @@ resource "docker_image" "web_dev" {
 }
 
 resource "docker_image" "api_dev" {
-  name = "node:24.21.0-alpine"
+  name = "terraform-lab-backend:1.0.0"
+
+  build {
+    context = abspath("${path.module}/backend")
+  }
+
+  triggers = {
+    source     = filesha256("${path.module}/backend/index.js")
+    package    = filesha256("${path.module}/backend/package.json")
+    lock       = filesha256("${path.module}/backend/package-lock.json")
+    dockerfile = filesha256("${path.module}/backend/Dockerfile")
+  }
 }
 
 resource "docker_image" "bd_dev" {
@@ -23,6 +34,12 @@ resource "docker_image" "bd_dev" {
 resource "docker_container" "web_dev" {
   name  = "web-dev"
   image = docker_image.web_dev.image_id
+
+  volumes {
+    host_path      = abspath("${path.module}/frontend")
+    container_path = "/usr/share/nginx/html"
+    read_only      = true
+  }
 
   ports {
     internal = 80
@@ -39,8 +56,14 @@ resource "docker_container" "api_dev" {
   name  = "api-dev"
   image = docker_image.api_dev.image_id
 
-  # Mantiene Node.js activo hasta incorporar el backend.
-  command = ["node", "-e", "setInterval(() => {}, 2147483647)"]
+  env = [
+    "APP_ENV=DEV",
+    "PGHOST=bd-dev",
+    "PGPORT=5432",
+    "PGUSER=dev",
+    "PGDATABASE=dev",
+    "PGPASSWORD=${var.postgres_password}",
+  ]
 
   ports {
     internal = 3000
